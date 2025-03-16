@@ -1,0 +1,100 @@
+---
+title: "NLP with Shrek Script"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```
+```{r}
+install.packages("tidytext")
+install.packages("dplyr")
+install.packages("stringr")
+install.packages("ggplot2")
+install.packages("wordcloud")
+install.packages("tm")
+install.packages("sentimentr")
+install.packages("knitr")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+This R Markdown document demonstrates Natural Language Processing (NLP) techniques using the a movie script of your choosing.
+
+## Load Libraries
+```{r}
+library(tidytext)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(wordcloud)
+library(tm)
+library(sentimentr)
+```
+
+## Load and Preprocess Script
+```{r}
+# Load script from URL - find your own on imsdb.com
+url <- "https://imsdb.com/scripts/Shrek.html"
+
+script_text <- readLines(url, warn = FALSE)
+
+# Extract main content (remove HTML tags)
+script_text <- script_text %>% paste(collapse = " ") %>% str_replace_all("<.*?>", " ")
+
+# Convert to tibble
+data <- tibble(text = unlist(str_split(script_text, "\n")))
+```
+
+## Tokenization and Word Frequency
+```{r}
+tokens <- data %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words, by = "word")
+
+word_counts <- tokens %>%
+  count(word, sort = TRUE)
+
+# Plot top words
+word_counts %>%
+  top_n(20) %>%
+  ggplot(aes(x = reorder(word, n), y = n)) +
+  geom_col(fill = "blue") +
+  coord_flip() +
+  labs(title = "Top Words in Shrek Script", x = "Word", y = "Count")
+```
+
+## Word Cloud
+```{r}
+wordcloud(words = word_counts$word, freq = word_counts$n, min.freq = 10, colors = brewer.pal(8, "Dark2"))
+```
+
+## Sentiment Analysis
+## Details on sentimentr polarity score https://rdrr.io/cran/sentimentr/man/sentiment.html
+```{r}
+sentiment_scores <- sentiment(data$text)
+
+ggplot(sentiment_scores, aes(x = sentiment)) +
+  geom_histogram(binwidth = 0.1, fill = "red", color = "black") +
+  labs(title = "Sentiment Distribution in Shrek Script", x = "Sentiment Score", y = "Frequency")
+```
+
+## Analyzing the sentiment over the course of the movie.
+
+```{r}
+
+plot(x = sentiment_scores$sentence_id,
+     y = sentiment_scores$sentiment,
+     xlab = "Sentence no.",
+     ylab = "Sentiment score",
+     main = "Sentiment development over sentences",
+     type = "l",
+     bty = "n")
+```
+
+
+## Conclusion
+This the end of a basic NLP technique walkthrough including text preprocessing, word frequency analysis, and sentiment analysis using a movie script.
