@@ -17,6 +17,9 @@ install.packages("sentimentr")
 install.packages("knitr")
 ```
 
+# May need to install xquartz if dependency file issue occurs on silicon macs
+# https://www.xquartz.org/
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
